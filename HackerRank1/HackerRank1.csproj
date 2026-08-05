@@ -22,9 +22,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\HackerRank1.BusinessLogic\HackerRank1.BusinessLogic.csproj" />
-    <ProjectReference Include="..\HackerRank1.DataAccess\HackerRank1.DataAccess.csproj" />
-    <ProjectReference Include="..\HackerRank1.Entities\HackerRank1.Entities.csproj" />
+    <ProjectReference Include="..\BusinessLogic\BusinessLogic.csproj" />
+    <ProjectReference Include="..\DataAccess\DataAccess.csproj" />
+    <ProjectReference Include="..\Entities\Entities.csproj" />
   </ItemGroup>
 
 </Project>
