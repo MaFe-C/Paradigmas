@@ -1,11 +1,11 @@
-﻿using HackerRank1.DTO;
-using HackerRank1.Entities;
-using HackerRank1.Helpers;
-using HackerRank1.Services;
+﻿using LibraryService.Entities.DTO;
+using LibraryService.Entities.Settings;
+using LibraryService.BusinessLogic.Helpers;
+using LibraryService.BusinessLogic.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace HackerRank1.Controllers;
+namespace LibraryService.WebAPI.Controllers;
 
 public record TokenResponse(string token);
 

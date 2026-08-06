@@ -1,13 +1,11 @@
-using HackerRank1.Entities;
-using HackerRank1.Services;
-using LibraryService.WebAPI.Data;
-using LibraryService.WebAPI.Services;
+using LibraryService.Entities.Settings;
+using LibraryService.BusinessLogic.Services;
+using LibraryService.DataAccess.Extensions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -39,7 +37,6 @@ namespace LibraryService.WebAPI
 
             services.AddSingleton(jwtSettings);
             services.AddScoped<IAuthenticationService, AuthenticationService>();
-
             // 3. Configurar Authenticacion
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(option =>
@@ -71,18 +68,10 @@ namespace LibraryService.WebAPI
 
 
             // Add support for Dependency Injection for internal services (BooksService and LibrariesService)
-            services.AddTransient<ILibrariesService,  LibrariesService>();
-            services.AddTransient<IBooksService,  BooksService>();
+            services.AddScoped<ILibrariesService, LibrariesService>();
+            services.AddScoped<IBooksService, BooksService>();
 
-            services.AddDbContextPool<LibraryContext>(options =>
-                options.UseNpgsql(Configuration.GetConnectionString("DefaultConnection"), npgsqlOptions =>
-                {
-                    npgsqlOptions.EnableRetryOnFailure(
-                        maxRetryCount: 1,
-                        maxRetryDelay: TimeSpan.FromSeconds(5),
-                        errorCodesToAdd: null);
-                }),
-                poolSize: 20);
+            services.AddDataAccess(Configuration);
 
             services.AddControllers();
 
@@ -118,11 +107,7 @@ namespace LibraryService.WebAPI
 
 
 
-            using (var scope = app.ApplicationServices.CreateScope())
-            {
-                var db = scope.ServiceProvider.GetRequiredService<LibraryContext>();
-                db.Database.Migrate();
-            }
+            DatabaseMigrator.Migrate(app.ApplicationServices);
 
             app.UseRouting();
 

@@ -1,4 +1,4 @@
-﻿namespace HackerRank1.DTO;
+﻿namespace LibraryService.Entities.DTO;
 
 public class User
 {

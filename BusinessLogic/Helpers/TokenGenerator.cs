@@ -1,11 +1,11 @@
-﻿using HackerRank1.DTO;
-using HackerRank1.Entities;
+﻿using LibraryService.Entities.DTO;
+using LibraryService.Entities.Settings;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace HackerRank1.Helpers;
+namespace LibraryService.BusinessLogic.Helpers;
 
 public static class TokenGenerator
 {

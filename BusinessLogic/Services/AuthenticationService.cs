@@ -1,6 +1,6 @@
-﻿using HackerRank1.DTO;
+﻿using LibraryService.Entities.DTO;
 
-namespace HackerRank1.Services;
+namespace LibraryService.BusinessLogic.Services;
 
 public interface IAuthenticationService
 {
