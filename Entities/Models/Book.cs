@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace LibraryService.WebAPI.Data
+namespace LibraryService.Entities.Models
 {
     public class Book
     {
@@ -9,10 +9,10 @@ namespace LibraryService.WebAPI.Data
 
         public string Name { get; set; }
 
-        public string Category { get; set; }
+        public string? Category { get; set; }
 
         public int LibraryId { get; set; }
 
-        public virtual Library Library { get; set; }
+        public virtual Library? Library { get; set; }
     }
 }

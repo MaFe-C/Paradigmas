@@ -1,11 +1,11 @@
-﻿using HackerRank1.DTO;
-using HackerRank1.Entities;
+﻿using LibraryService.Entities.DTO;
+using LibraryService.Entities.Settings;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace HackerRank1.Helpers;
+namespace LibraryService.BusinessLogic.Helpers;
 
 public static class TokenGenerator
 {
@@ -15,7 +15,7 @@ public static class TokenGenerator
         {
             new Claim (ClaimTypes.NameIdentifier, user.Id.ToString()),
             new Claim (ClaimTypes.Email, user.Email),
-            new Claim (ClaimTypes.Role, user.Role)
+            new Claim (ClaimTypes.Role, user.Role ?? string.Empty)
         };
 
 

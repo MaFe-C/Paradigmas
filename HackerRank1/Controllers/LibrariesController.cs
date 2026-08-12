@@ -1,8 +1,8 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using LibraryService.WebAPI.Data;
-using LibraryService.WebAPI.Services;
+using LibraryService.Entities.Models;
+using LibraryService.BusinessLogic.Services;
 using System;
 using Microsoft.AspNetCore.Authorization;
 
@@ -53,6 +53,16 @@ namespace LibraryService.WebAPI.Controllers
             return NoContent();
         }
 
-        // Implement the DELETE method below
+        // Delete a library
+        [HttpDelete("{libraryId}")]
+        public async Task<IActionResult> Delete(int libraryId)
+        {
+            var existingLibrary = (await _librariesService.Get(new[] { libraryId })).FirstOrDefault();
+            if (existingLibrary == null)
+                return NotFound();
+
+            await _librariesService.Delete(existingLibrary);
+            return NoContent();
+        }
     }
 }

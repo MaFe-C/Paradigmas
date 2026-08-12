@@ -1,53 +1,60 @@
-using LibraryService.WebAPI.Data;
-using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using LibraryService.BusinessLogic.Contracts;
+using LibraryService.Entities.Models;
 
-namespace LibraryService.WebAPI.Services
+namespace LibraryService.BusinessLogic.Services
 {
     public class BooksService : IBooksService
     {
-        private readonly LibraryContext _libraryContext;
+        private readonly IBooksRepository _booksRepository;
+        private readonly ILibrariesRepository _librariesRepository;
 
-        public BooksService(LibraryContext libraryContext)
+        public BooksService(IBooksRepository booksRepository, ILibrariesRepository librariesRepository)
         {
-            _libraryContext = libraryContext;
+            _booksRepository = booksRepository;
+            _librariesRepository = librariesRepository;
         }
 
-        public async Task<IEnumerable<Book>> Get(int libraryId, int[] ids)
+        public async Task<IEnumerable<Book>> Get(int libraryId, int[]? ids)
+            => await _booksRepository.GetAsync(libraryId, ids);
+
+        public async Task<Book?> Add(Book book)
         {
-            var query = _libraryContext.Books.AsQueryable().Where(b => b.LibraryId == libraryId);
+            var libraryExists = (await _librariesRepository.GetAsync(new[] { book.LibraryId })).Any();
+            if (!libraryExists)
+                return null;
 
-            if (ids != null && ids.Any())
-                query = query.Where(b => ids.Contains(b.Id));
-
-            return await query.ToListAsync();
+            return await _booksRepository.AddAsync(book);
         }
 
-        public async Task<Book> Add(Book book)
+        public async Task<Book?> Update(Book book)
         {
-            // Complete the implementation
-            throw new NotImplementedException();
-        }
+            var libraryExists = (await _librariesRepository.GetAsync(new[] { book.LibraryId })).Any();
+            if (!libraryExists)
+                return null;
 
-        public async Task<Book> Update(Book book)
-        {
-            // Complete the implementation
-            throw new NotImplementedException();
+            return await _booksRepository.UpdateAsync(book);
         }
 
         public async Task<bool> Delete(Book book)
         {
-            // Complete the implementation
-            throw new NotImplementedException();
+            var libraryExists = (await _librariesRepository.GetAsync(new[] { book.LibraryId })).Any();
+            if (!libraryExists)
+                return false;
+
+            return await _booksRepository.DeleteAsync(book.Id, book.LibraryId);
         }
     }
 
     public interface IBooksService
     {
-        Task<IEnumerable<Book>> Get(int libraryId, int[] ids);
+        Task<IEnumerable<Book>> Get(int libraryId, int[]? ids);
 
-        Task<Book> Add(Book book);
+        Task<Book?> Add(Book book);
 
-        Task<Book> Update(Book book);
+        Task<Book?> Update(Book book);
 
         Task<bool> Delete(Book book);
     }

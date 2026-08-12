@@ -1,69 +1,42 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using LibraryService.WebAPI.Data;
-using Microsoft.EntityFrameworkCore;
+using LibraryService.BusinessLogic.Contracts;
+using LibraryService.Entities.Models;
 
-namespace LibraryService.WebAPI.Services
+namespace LibraryService.BusinessLogic.Services
 {
     public class LibrariesService : ILibrariesService
     {
-        private readonly LibraryContext _libraryContext;
+        private readonly ILibrariesRepository _librariesRepository;
 
-        public LibrariesService(LibraryContext libraryContext)
+        public LibrariesService(ILibrariesRepository librariesRepository)
         {
-            _libraryContext = libraryContext;
+            _librariesRepository = librariesRepository;
         }
 
-        public async Task<IEnumerable<Library>> Get(int[] ids)
-        {
-            var projects = _libraryContext.Libraries.AsQueryable();
-
-            if (ids != null && ids.Any())
-                projects = projects.Where(x => ids.Contains(x.Id));
-
-            return await projects.ToListAsync();
-        }
+        public async Task<IEnumerable<Library>> Get(int[]? ids)
+            => await _librariesRepository.GetAsync(ids);
 
         public async Task<Library> Add(Library library)
-        {
-            await _libraryContext.Libraries.AddAsync(library);
-
-            await _libraryContext.SaveChangesAsync();
-            return library;
-        }
+            => await _librariesRepository.AddAsync(library);
 
         public async Task<IEnumerable<Library>> AddRange(IEnumerable<Library> projects)
-        {
-            await _libraryContext.Libraries.AddRangeAsync(projects);
-            await _libraryContext.SaveChangesAsync();
-            return projects;
-        }
+            => await _librariesRepository.AddRangeAsync(projects);
 
         public async Task<Library> Update(Library library)
-        {
-            var projectForChanges = await _libraryContext.Libraries.SingleAsync(x => x.Id == library.Id);
-            projectForChanges.Name = library.Name;
-            projectForChanges.Location = library.Location;
-
-            _libraryContext.Libraries.Update(projectForChanges);
-            await _libraryContext.SaveChangesAsync();
-            return library;
-        }
+            => await _librariesRepository.UpdateAsync(library);
 
         public async Task<bool> Delete(Library library)
-        {
-            // Complete the implementation
-            throw new NotImplementedException();
-        }
+            => await _librariesRepository.DeleteAsync(library.Id);
     }
 
     public interface ILibrariesService
     {
-        Task<IEnumerable<Library>> Get(int[] ids);
+        Task<IEnumerable<Library>> Get(int[]? ids);
 
         Task<Library> Add(Library library);
+
+        Task<IEnumerable<Library>> AddRange(IEnumerable<Library> projects);
 
         Task<Library> Update(Library library);
 

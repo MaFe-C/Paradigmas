@@ -1,13 +1,17 @@
 ﻿
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
 using LibraryService.WebAPI;
-using LibraryService.WebAPI.Data;
-using LibraryService.WebAPI.DTO;
+using LibraryService.WebAPI.Controllers;
+using LibraryService.DataAccess.Data;
+using LibraryService.Entities.DTO;
+using LibraryService.Entities.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -35,14 +39,13 @@ namespace LibraryService.Tests
                         .EnableSensitiveDataLogging()
                         .Options);
             Client = _factory.WithWebHostBuilder(builder =>
-                builder.UseStartup<Startup>()
+                builder
                 .ConfigureServices(services =>
                 {
                     services.RemoveAll(typeof(LibraryContext));
                     services.AddSingleton(context);
 
                     context.Database.OpenConnection();
-                    context.Database.EnsureCreated();
 
                     context.SaveChanges();
 
@@ -79,11 +82,23 @@ namespace LibraryService.Tests
                 new StringContent(JsonConvert.SerializeObject(bookForm), Encoding.UTF8, "application/json"));
         }
 
+        private async Task AuthenticateAsync()
+        {
+            var response = await Client.PostAsync("/login",
+                new StringContent(JsonConvert.SerializeObject(new { email = "admin", password = "1234" }), Encoding.UTF8, "application/json"));
+            var body = await response.Content.ReadAsStringAsync();
+            if (!response.IsSuccessStatusCode)
+                throw new HttpRequestException($"Login failed: {(int)response.StatusCode} {body}");
+            var token = JsonConvert.DeserializeObject<TokenResponse>(body)!.token;
+            Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        }
+
         // TEST NAME - addBookToLibrary
         // TEST DESCRIPTION - It adds book to a library
         [Fact]
         public async Task TestAddBook_Ok_GetBook_NotFound()
         {
+            await AuthenticateAsync();
             await SeedLibrary();
 
             var bookForm = new BookForm
@@ -94,7 +109,7 @@ namespace LibraryService.Tests
             var response1 = await Client.PostAsync($"/api/libraries/1/books",
                 new StringContent(JsonConvert.SerializeObject(bookForm), Encoding.UTF8, "application/json"));
 
-            response1.StatusCode.Should().BeEquivalentTo(StatusCodes.Status201Created);
+            response1.StatusCode.Should().Be((HttpStatusCode)StatusCodes.Status201Created);
 
             bookForm = new BookForm
             {
@@ -104,7 +119,7 @@ namespace LibraryService.Tests
             var response2 = await Client.PostAsync($"/api/libraries/100/books",
                 new StringContent(JsonConvert.SerializeObject(bookForm), Encoding.UTF8, "application/json"));
 
-            response2.StatusCode.Should().BeEquivalentTo(StatusCodes.Status404NotFound);
+            response2.StatusCode.Should().Be((HttpStatusCode)StatusCodes.Status404NotFound);
         }
 
         // TEST NAME - getBooksInALibrary
@@ -112,23 +127,24 @@ namespace LibraryService.Tests
         [Fact]
         public async Task TestGetBooks_Ok_NotFound()
         {
+            await AuthenticateAsync();
             await SeedLibrary();
 
             await SeedBook("test book 1", 1);
             await SeedBook("test book 2", 1);
 
             var response1 = await Client.GetAsync($"/api/libraries/2/books");
-            response1.StatusCode.Should().BeEquivalentTo(StatusCodes.Status200OK);
+            response1.StatusCode.Should().Be((HttpStatusCode)StatusCodes.Status200OK);
             var books = JsonConvert.DeserializeObject<IEnumerable<Book>>(response1.Content.ReadAsStringAsync().Result).ToList();
             books.Count.Should().Be(0);
 
             var response2 = await Client.GetAsync($"/api/libraries/1/books");
-            response2.StatusCode.Should().BeEquivalentTo(StatusCodes.Status200OK);
+            response2.StatusCode.Should().Be((HttpStatusCode)StatusCodes.Status200OK);
             var books2 = JsonConvert.DeserializeObject<IEnumerable<Book>>(response2.Content.ReadAsStringAsync().Result).ToList();
             books2.Count.Should().Be(2);
 
             var response3 = await Client.GetAsync($"/api/libraries/31232/books");
-            response3.StatusCode.Should().BeEquivalentTo(StatusCodes.Status404NotFound);
+            response3.StatusCode.Should().Be((HttpStatusCode)StatusCodes.Status404NotFound);
         }
 
         // TEST NAME - deleteLibraryById
@@ -136,6 +152,7 @@ namespace LibraryService.Tests
         [Fact]
         public async Task TestDeleteLibrary()
         {
+            await AuthenticateAsync();
             await SeedLibrary();
 
             var bookForm = new BookForm
@@ -146,18 +163,18 @@ namespace LibraryService.Tests
             // add book to library
             var response0 = await Client.PostAsync("/api/libraries/1/books",
                 new StringContent(JsonConvert.SerializeObject(bookForm), Encoding.UTF8, "application/json"));
-            response0.StatusCode.Should().BeEquivalentTo(StatusCodes.Status201Created);
+            response0.StatusCode.Should().Be((HttpStatusCode)StatusCodes.Status201Created);
 
             // delete library
             var response1 = await Client.DeleteAsync("/api/libraries/1");
-            response1.StatusCode.Should().BeEquivalentTo(StatusCodes.Status204NoContent);
+            response1.StatusCode.Should().Be((HttpStatusCode)StatusCodes.Status204NoContent);
 
             // Verify that delete is successful
             var response2 = await Client.GetAsync("/api/libraries/1/books");
-            response2.StatusCode.Should().BeEquivalentTo(StatusCodes.Status404NotFound);
+            response2.StatusCode.Should().Be((HttpStatusCode)StatusCodes.Status404NotFound);
 
             var response3 = await Client.DeleteAsync("/api/libraries/1");
-            response3.StatusCode.Should().BeEquivalentTo(StatusCodes.Status404NotFound);
+            response3.StatusCode.Should().Be((HttpStatusCode)StatusCodes.Status404NotFound);
         }
     }
 }

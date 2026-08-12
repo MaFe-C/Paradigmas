@@ -3,7 +3,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace HackerRank1.Migrations
+namespace LibraryService.DataAccess.Migrations
 {
     /// <inheritdoc />
     public partial class InitialCreate : Migration
@@ -32,7 +32,7 @@ namespace HackerRank1.Migrations
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(type: "text", nullable: false),
-                    Category = table.Column<string>(type: "text", nullable: false),
+                    Category = table.Column<string>(type: "text", nullable: true),
                     LibraryId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>

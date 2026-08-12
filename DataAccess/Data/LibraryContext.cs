@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using LibraryService.Entities.Models;
 
-namespace LibraryService.WebAPI.Data
+namespace LibraryService.DataAccess.Data
 {
     public class LibraryContext : DbContext
     {
