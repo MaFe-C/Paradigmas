@@ -1,8 +1,6 @@
-using LibraryService.WebAPI.Settings;
-using LibraryService.WebAPI.Features.Auth;
-using LibraryService.WebAPI.Features.Libraries;
-using LibraryService.WebAPI.Features.Books;
-using LibraryService.WebAPI.Extensions;
+using LibraryService.Entities.Settings;
+using LibraryService.BusinessLogic.Services;
+using LibraryService.DataAccess.Extensions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
